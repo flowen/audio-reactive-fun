@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+
+	<style type="text/css">
+
+	#canvas {
+		width: 100%;
+		height: 100%;
+		max-width: 100%;
+		max-height: 100%;
+	}
+	
+	.canvas-holder {
+		position: relative;
+		margin-bottom: 200vh;
+	}
+
+	.canvas-overlay {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background: #122421;
+		opacity: 0;
+		z-index: 50;
+		mix-blend-mode: luminosity;
+	}
+
+	.btn {
+		display: inline-block;
+		padding: 15px 10px;
+		background: #D098A5;
+		color: #000;
+	}
+
+	.btn:hover {
+		background-color: #DB9FA9;
+		cursor: pointer;
+	}
+
+	.btn:active {
+		background-color: #EBEDFA;
+	}
+
+	.loader,
+	.play {
+		position: fixed;
+		left: 50%;
+		top: 50%;
+		transform: translate(-50%,-50%);
+	}
+
+	.new-song {
+		position: relative;
+		z-index: 9999;
+	}
+
+	.hidden {
+		opacity: 0;
+		transition: all .5s ease-out;
+	}
+	</style>
+</head>
+<body>
+	
+
+	<div class="canvas-holder">
+		<canvas id="canvas" width="512" height="384"></canvas>
+		<div class="canvas-overlay"></div>
+
+		<a class="btn new-song">new song</a>
+		<p>Scroll to reduce volume and fade out</p>
+	</div>
+	
+	<div class="loader">
+		<img src="loader.svg" alt="">
+	</div>
+	
+	<script src="https://code.jquery.com/jquery-2.2.1.min.js"></script>
+	<script src="p5.min.js"></script>
+	<script src="p5.sound.js"></script>
+	<script src="pixi.js"></script>
+	<script src="helpers.js"></script>
+	<script src="ardmoi.js"></script>
+
+</body>
+</html>
