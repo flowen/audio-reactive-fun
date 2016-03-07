@@ -2,8 +2,8 @@
   
 
   <head>
-  <script src="p5.min.js"></script>
-  <script src="p5.sound.js"></script>
+  <script src="/js/lib/p5.min.js"></script>
+  <script src="/js/lib/p5.sound.js"></script>
     <script>
       var soundFile;
       var fft;
@@ -12,7 +12,7 @@
       function preload() {
         soundFormats('mp3', 'ogg');
         var songs = ['sample-jamie.mp3', 'sample-aphex.mp3', 'sample-impala.mp3', 'sample-priest.mp3'];
-        soundFile = loadSound('songs/' + songs[1]);
+        soundFile = loadSound('songs/' + songs[0]);
       }
       
       function setup() {
