@@ -7,7 +7,6 @@
     <script>
       var soundFile;
       var fft;
-      
       var filter, filterFreq, filterRes;
       
       function preload() {
@@ -32,26 +31,41 @@
       
         fft = new p5.FFT();
       }
-      
+      var x1 = 40, x2 = 100;
+      var maxTrigger = 222, 
+          minTrigger = 202,
+          notePlay = false;
       function draw() {
         background(30);
       
         // Map mouseX to a the cutoff frequency from the lowest
         // frequency (10Hz) to the highest (22050Hz) that humans can hear
         // filterFreq = (0,22500);
-        // console.log(filterFreq);
-      
+        filterFreq = map (mouseX, 0, width, 10, 22050);
+
         // Map mouseY to resonance (volume boost) at the cutoff frequency
-        // filterRes = map(mouseY, 0, height, 15, 5);
+        filterRes = map(mouseY, 0, height, 15, 5);
       
         // set filter parameters
-        // filter.set(filterFreq);
+        filter.set(filterFreq, filterRes);
       
         // Draw every value in the FFT spectrum analysis where
         // x = lowest (10Hz) to highest (22050Hz) frequencies,
         // h = energy (amplitude / volume) at that frequency
         var spectrum = fft.analyze();
 
+        // bassDetect = new p5.PeakDetect(x1, x2, .89);
+        bEnergy = fft.getEnergy(x1, x2);
+        // console.log(bEnergy);
+        // bassDetect.update(fft);
+        // if (bassDetect.isDetected) console.log('bass');
+        if (bEnergy > maxTrigger && !notePlay) {
+            notePlay = true;
+            console.log('maxTrigger: ' +bEnergy);
+        } else if (bEnergy < minTrigger && notePlay) {
+            notePlay = false;
+        }
+        // console.log(bEnergy);
         noStroke();
         for (var i = 0; i< spectrum.length; i++){
           var x = map(i, 0, spectrum.length, 0, width);
