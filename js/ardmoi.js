@@ -235,8 +235,6 @@ function animate() {
 
     // Loops never end though!
     sound.onended(function() {
-        // console.log('==============================================');
-        // console.log('onended');
         newSong();
     });
 
