@@ -14,21 +14,21 @@ var songs = [
             {
                 filename: 'sample-priest.mp3',
                 fbass: { x1:0, x2:90, t: 0.7},
-                fmid: { x1:91, x2:140, t: 0.8}
+                fmid: { x1: 70, x2:140, t: 0.8}
             },
             {
                 filename: 'sample-jamie.mp3',
                 fbass: { x1:0, x2:60, t: 0.7},
                 fmid: { x1:90, x2:110, t: 0.7}
+            },
+            {
+                filename: 'sample-impala.mp3',
+                fbass: { x1:40, x2:70, t: 0.7},
+                fmid: { x1:70, x2:110, t: 0.9}
             }
-            // {
-            //     filename: 'sample-impala.mp3',
-            //     fbass: { x1:40, x2:70, t: 0.7},
-            //     fmid: { x1:70, x2:110, t: 0.9}
-            // }
             ];
 
-var images = ['berlin.jpg','flying.jpg','ganesh.jpg','japan.jpg','moondark.jpg', 'moonlight.jpg', 'nihon.jpg', 'space.jpg', 'terminator.jpg'];
+var sprites = ['berlin.jpg','flying.jpg','ganesh.jpg','japan.jpg','moondark.jpg', 'moonlight.jpg', 'nihon.jpg', 'space.jpg', 'terminator.jpg'];
 
 var fft = new p5.FFT();
 
@@ -49,10 +49,10 @@ var windowWidth = window.innerWidth,
 */
 var assLoader = PIXI.loader;
 
-for (var i = 0; i < images.length; i++) {
-    assLoader.add(images[i],'images/'+ images[i]);
+for (var i = 0; i < sprites.length; i++) {
+    assLoader.add(sprites[i],'images/'+ sprites[i]);
     // HOWTO ADD DEPTH MAPS?
-    // assLoader.add('depth-'+ images[i],'dmaps/'+ images[i]);
+    // assLoader.add('depth-'+ sprites[i],'dmaps/'+ sprites[i]);
 }
 
 /*
@@ -124,11 +124,13 @@ function getSpectrum() {
     midDetect.update(fft);
 
     if ( bassDetect.isDetected ) {
-        stroboBlack();
+        // stroboBlack();
+        newImage();
     }
 
     if ( midDetect.isDetected ) {
-        stroboWhite();
+        // stroboWhite();
+        newImage();
     }
 }
 
@@ -147,6 +149,71 @@ function stroboWhite() {
       .to(overlay, .01, {opacity: 0, backgroundColor: '#000'});
 }
 
+var totalSpritesOnStage = [];
+function newImage() {
+
+    // Let's loop through all sprites
+    // find the depthmap according to it
+    var sprites = assLoader.resources,
+        spriteKeys = Object.keys(sprites);
+    // console.log('change image');
+    // console.log('--------------------------');
+    // image and image depth map have the same name, but different folders.
+
+    var randomImage = h.getRandomInt(0, spriteKeys.length-1),
+        thisImage = sprites[spriteKeys[randomImage]];
+
+    if (randomImage === currentImage) {
+        newImage();
+        return;
+    } else {
+        currentImage = randomImage; // update currentImage
+    }
+    
+    totalSpritesOnStage.push(thisImage);
+    // console.log(totalSpritesOnStage.length); // wordt telkens hoger, werkt .shift()?
+    // console.log(spriteKeys.length); //blijft hetzelfe
+    
+    if (totalSpritesOnStage.length > 4) {
+        // let's destroy the sprite now
+        stage.removeChild(totalSpritesOnStage[0]); 
+        stage.removeChild(totalSpritesOnStage[1]); 
+
+        // after destroying the sprites, we remove it from the array as well
+        totalSpritesOnStage.shift();
+        totalSpritesOnStage.shift();
+    }
+
+    /*
+        Filters
+    */
+
+    //DMAP
+    // TODO: DEPTHMAPS OOK IN ASSLOADER ????
+    displacementTexture = new PIXI.Sprite.fromImage('dmaps/' + thisImage.name);
+    displacementTexture.width = windowWidth;
+    stage.addChild(displacementTexture);
+    // WACHT FUCK TOCH WEL MET KEY IPV INDEX
+    totalSpritesOnStage.push(displacementTexture);
+
+    console.log(totalSpritesOnStage);
+    // console.log(displacementTexture._texture.baseTexture.imageUrl);
+    displacementFilter = new PIXI.filters.DisplacementFilter(displacementTexture);
+    
+
+    // main visual randomized
+    mainVisual = new PIXI.Sprite.fromImage(thisImage.url);
+    mainVisual.width = windowWidth;
+    stage.addChild(mainVisual);
+
+    // there are always 2 sprites added, a dmap and a visual.
+    // remove the first 2
+    // console.log('children: ' +stage.children.length);
+    // console.log(stage.children);
+    // add filters
+    mainVisual.filters = [displacementFilter];
+}
+
 /*
     initialise the canvas
 */
@@ -161,49 +228,8 @@ function initPixiContainer() {
 
     // we now shuold have the preloaded assets
     console.log('All assets loaded in assLoader.resources');
-    
-    // Let's loop through all images
-    // find the depthmap according to it
-    var images = assLoader.resources,
-        imageKeys = Object.keys(images);
 
-    function newImage() {
-        console.log('change image');
-        console.log('--------------------------');
-        // image and image depth map have the same name, but different folders.
-
-        var randomImage = h.getRandomInt(0, imageKeys.length-1),
-            thisImage = images[imageKeys[randomImage]];
-        console.log(thisImage.name);
-
-        if (randomImage === currentImage) {
-            newImage();
-            return;
-        } else {
-            currentImage = randomImage; // update currentImage
-        }
-
-        /*
-            Filters
-        */
-
-        //DMAP
-        displacementTexture = new PIXI.Sprite.fromImage('dmaps/' + thisImage.name);
-        stage.addChild(displacementTexture);
-        console.log(displacementTexture._texture.baseTexture.imageUrl);
-        displacementFilter = new PIXI.filters.DisplacementFilter(displacementTexture);
-        
-        // main visual randomized
-        mainVisual = new PIXI.Sprite.fromImage(thisImage.url);
-        mainVisual.width = windowWidth;
-        stage.addChild(mainVisual);
-    
-        // add filters
-        mainVisual.filters = [displacementFilter];
-    }
-
-    imageInterval = setInterval(newImage, 5000);
-
+    // so we load an image
     newImage();
     
     // start animate
@@ -231,10 +257,12 @@ function animate() {
     displacementFilter.scale.x += 1.25;
 
     getSpectrum();
-    displacementFilter.scale.x -= 5;
+    // displacementFilter.scale.x -= 5;
 
     // Loops never end though!
     sound.onended(function() {
+        // console.log('==============================================');
+        // console.log('onended');
         newSong();
     });
 
@@ -249,3 +277,6 @@ newSong();
 
 // once assets are loaded, we load the stage
 assLoader.once('complete', initPixiContainer());
+
+
+
