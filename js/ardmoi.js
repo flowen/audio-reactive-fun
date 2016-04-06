@@ -1,10 +1,11 @@
 // TODO: MOUSE INTERACTION
+// TODO: FRAMERATE DROP SEEMS FROM P5 SOUND LIBRARY???
 
-//init variables
+
 var $loader = $('.loader'),
     $btnNewSong = $('.new-song');
 
-// TODO find right frequences and tresholds for all songs
+// TODO find right frequencies and tresholds for all songs
 var songs = [
             {
                 filename: 'sample-aphex-l.mp3',
@@ -44,6 +45,7 @@ var currentSong = 0,  // if random, remove default value
 
 var windowWidth = window.innerWidth,
     windowHeight = window.innerHeight;
+
 /*
     Assetloader to preload all sprites
 */
@@ -51,7 +53,7 @@ var assLoader = PIXI.loader;
 
 for (var i = 0; i < sprites.length; i++) {
     assLoader.add(sprites[i],'images/'+ sprites[i]);
-    // HOWTO ADD DEPTH MAPS?
+    // HOWTO ADD DEPTH MAPS TO ASSETLOADER? NEED???
     // assLoader.add('depth-'+ sprites[i],'dmaps/'+ sprites[i]);
 }
 
@@ -97,7 +99,8 @@ function newSong() {
     } else {
         currentSong = 0;
     }
-    // // let's set the parameters for bass and mid detection
+
+    // let's set the parameters for bass and mid detection
     thisSong = songs[currentSong];
     fbass = thisSong.fbass;
     fmid = thisSong.fmid;
@@ -156,10 +159,8 @@ function newImage() {
     // find the depthmap according to it
     var sprites = assLoader.resources,
         spriteKeys = Object.keys(sprites);
-    // console.log('change image');
-    // console.log('--------------------------');
-    // image and image depth map have the same name, but different folders.
 
+    // image and image depth map have the same name, but different folders.
     var randomImage = h.getRandomInt(0, spriteKeys.length-1),
         thisImage = sprites[spriteKeys[randomImage]];
 
@@ -167,12 +168,10 @@ function newImage() {
         newImage();
         return;
     } else {
-        currentImage = randomImage; // update currentImage
+        currentImage = randomImage;
     }
     
     totalSpritesOnStage.push(thisImage);
-    // console.log(totalSpritesOnStage.length); // wordt telkens hoger, werkt .shift()?
-    // console.log(spriteKeys.length); //blijft hetzelfe
     
     if (totalSpritesOnStage.length > 4) {
         // let's destroy the sprite now
@@ -206,10 +205,6 @@ function newImage() {
     mainVisual.width = windowWidth;
     stage.addChild(mainVisual);
 
-    // there are always 2 sprites added, a dmap and a visual.
-    // remove the first 2
-    // console.log('children: ' +stage.children.length);
-    // console.log(stage.children);
     // add filters
     mainVisual.filters = [displacementFilter];
 }
@@ -220,6 +215,7 @@ function newImage() {
 function initPixiContainer() {
     console.log('initPixiContainer');
     stage = new PIXI.Container();
+    stage.imageSmoothingEnabled = false;
     renderer = new PIXI.autoDetectRenderer(
         windowWidth,
         windowHeight,
@@ -259,10 +255,7 @@ function animate() {
     getSpectrum();
     // displacementFilter.scale.x -= 5;
 
-    // Loops never end though!
     sound.onended(function() {
-        // console.log('==============================================');
-        // console.log('onended');
         newSong();
     });
 
@@ -271,12 +264,7 @@ function animate() {
     requestAnimationFrame(animate);
 }
 
-// start with a song
-// pick random artworkl
 newSong();
 
 // once assets are loaded, we load the stage
 assLoader.once('complete', initPixiContainer());
-
-
-
