@@ -1,6 +1,4 @@
 // TODO: MOUSE INTERACTION
-// TODO: FRAMERATE DROP SEEMS FROM P5 SOUND LIBRARY???
-
 
 var $loader = $('.loader'),
     $btnNewSong = $('.new-song');
@@ -9,25 +7,27 @@ var $loader = $('.loader'),
 var songs = [
             {
                 filename: 'sample-aphex-l.mp3',
-                fbass: { x1:0, x2:60, t: 0.8},
-                fmid: { x1:70, x2:120, t: 0.7}
+                fbass: { x1:0, x2:50, t: 0.9},
+                fmid: { x1:80, x2:120, t: 0.9}
             },
             {
                 filename: 'sample-priest.mp3',
-                fbass: { x1:0, x2:90, t: 0.7},
-                fmid: { x1: 70, x2:140, t: 0.8}
+                fbass: { x1:0, x2:70, t: 0.9},
+                fmid: { x1: 90, x2:120, t: 0.9}
             },
             {
                 filename: 'sample-jamie.mp3',
                 fbass: { x1:0, x2:60, t: 0.7},
-                fmid: { x1:90, x2:110, t: 0.7}
+                fmid: { x1:120, x2:180, t: 1}
             },
             {
                 filename: 'sample-impala.mp3',
-                fbass: { x1:40, x2:70, t: 0.7},
-                fmid: { x1:70, x2:110, t: 0.9}
+                fbass: { x1:40, x2:90, t: 0.5},
+                fmid: { x1:80, x2:140, t: 1}
             }
             ];
+
+var allSounds = [];
 
 var sprites = ['berlin.jpg','flying.jpg','ganesh.jpg','japan.jpg','moondark.jpg', 'moonlight.jpg', 'nihon.jpg', 'space.jpg', 'terminator.jpg'];
 
@@ -62,11 +62,26 @@ for (var i = 0; i < sprites.length; i++) {
 */
 function preload(song) {
     console.log('preloading song: ' + currentSong);
-    console.log(song.filename);
-    sound = new p5.SoundFile('songs/' + song.filename,
+
+    if (allSounds[currentSong]) {
+        console.log('same song');
+        sound = allSounds[currentSong];
+        sound.setVolume(volume);
+        sound.play();
+        return;
+    }
+
+    allSounds[song] = sound = new p5.SoundFile('songs/' + song.filename,
         onMusicLoaded,
         h.onError
     );
+
+    console.log(allSounds);
+    console.log('allSounds[currentSong]');
+    console.log(allSounds[currentSong]);
+    console.log('allSounds[song]');
+    console.log(allSounds[song]);
+    
 
     // The volume is reset (to 1) when a new song is loaded. so we force it 
     sound.setVolume(volume);
@@ -152,9 +167,7 @@ function stroboWhite() {
       .to(overlay, .01, {opacity: 0, backgroundColor: '#000'});
 }
 
-var totalSpritesOnStage = [];
 function newImage() {
-
     // Let's loop through all sprites
     // find the depthmap according to it
     var sprites = assLoader.resources,
@@ -170,32 +183,22 @@ function newImage() {
     } else {
         currentImage = randomImage;
     }
-    
-    totalSpritesOnStage.push(thisImage);
-    
-    if (totalSpritesOnStage.length > 4) {
-        // let's destroy the sprite now
-        stage.removeChild(totalSpritesOnStage[0]); 
-        stage.removeChild(totalSpritesOnStage[1]); 
-
-        // after destroying the sprites, we remove it from the array as well
-        totalSpritesOnStage.shift();
-        totalSpritesOnStage.shift();
-    }
 
     /*
         Filters
     */
 
     //DMAP
-    // TODO: DEPTHMAPS OOK IN ASSLOADER ????
     displacementTexture = new PIXI.Sprite.fromImage('dmaps/' + thisImage.name);
     displacementTexture.width = windowWidth;
     stage.addChild(displacementTexture);
-    // WACHT FUCK TOCH WEL MET KEY IPV INDEX
-    totalSpritesOnStage.push(displacementTexture);
 
-    console.log(totalSpritesOnStage);
+
+    if (stage.children.length > 4) {
+        // let's destroy the sprites now
+        stage.removeChildren(4);
+    }
+
     // console.log(displacementTexture._texture.baseTexture.imageUrl);
     displacementFilter = new PIXI.filters.DisplacementFilter(displacementTexture);
     
@@ -203,6 +206,7 @@ function newImage() {
     // main visual randomized
     mainVisual = new PIXI.Sprite.fromImage(thisImage.url);
     mainVisual.width = windowWidth;
+    mainVisual.height = windowHeight;
     stage.addChild(mainVisual);
 
     // add filters
@@ -213,7 +217,6 @@ function newImage() {
     initialise the canvas
 */
 function initPixiContainer() {
-    console.log('initPixiContainer');
     stage = new PIXI.Container();
     stage.imageSmoothingEnabled = false;
     renderer = new PIXI.autoDetectRenderer(
